@@ -66,6 +66,7 @@ import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -280,8 +281,21 @@ class HttpRequest {
           // Intentionally left blank
         }
 
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
           // Intentionally left blank
+          if (chain == null) {
+            throw new IllegalArgumentException("checkServerTrusted: X509Certificate array is null");
+          }
+
+          if (!(chain.length > 0)) {
+            throw new IllegalArgumentException("checkServerTrusted: X509Certificate is empty");
+          }
+
+          try {
+            chain[0].checkValidity();
+          } catch (Exception e) {
+            throw new CertificateException("Certificate not valid or trusted.");
+          }
         }
       } };
       try {
